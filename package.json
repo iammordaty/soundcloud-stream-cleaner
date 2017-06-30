@@ -1,0 +1,42 @@
+{
+  "name": "soundcloud-stream-cleaner",
+  "description": "Userscript which allows you to delete unwanted tracks from your stream!",
+  "homepage": "https://github.com/iammordaty/soundcloud-stream-cleaner",
+  "version": "0.0.1",
+  "license": "CC-BY-3.0",
+  "author": "iammordaty",
+  "maintainers": [
+    {
+      "name": "iammordaty",
+      "url": "https://github.com/iammordaty"
+    }
+  ],
+  "devDependencies": {
+    "babel-plugin-array-includes": "^2.0.3",
+    "babel-plugin-transform-remove-strict-mode": "0.0.2",
+    "babel-preset-es2015": "^6.24.0",
+    "del": "^2.2.2",
+    "eslint": "^3.19.0",
+    "eslint-plugin-compat": "^1.0.2",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-concat": "^2.6.1",
+    "gulp-connect": "^5.0.0",
+    "gulp-eslint": "^3.0.1",
+    "gulp-plumber": "^1.1.0",
+    "gulp-strip-comments": "^2.4.5",
+    "gulp-uglify": "^2.1.2",
+    "gulp-util": "^3.0.8"
+  },
+  "browserslist": [
+    "> 1%"
+  ],
+  "bugs": {
+    "url": "https://github.com/iammordaty/soundcloud-stream-cleaner/issues"
+  },
+  "repository": {
+    "type": "git",
+    "git": "git://github.com/iammordaty/soundcloud-stream-cleaner.git"
+  },
+  "scripts": {}
+}

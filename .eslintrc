@@ -1,0 +1,33 @@
+{
+    "extends": "eslint:recommended",
+    "plugins": [
+        "compat",
+    ],
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "impliedStrict": true,
+    },
+    "env": {
+        "browser": true,
+        "greasemonkey": true,
+    },
+    "rules": {
+        "array-bracket-spacing": [ "warn", "always", { "objectsInArrays": false } ],
+        "comma-spacing": [ "warn", { "before": false, "after": true } ],
+        "compat/compat": "error",
+        "eol-last": [ "warn", "always" ],
+        "indent": [ "error", 4 ],
+        "key-spacing": [ "warn", { "mode" : "strict" } ],
+        "linebreak-style": [ "warn", "unix" ],
+        "no-console": "off",
+        "no-mixed-spaces-and-tabs": "error",
+        "no-multiple-empty-lines": [ "warn", { "max": 1 } ],
+        "no-trailing-spaces": [ "warn" ],
+        "no-unexpected-multiline": "warn",
+        "object-curly-spacing": [ "warn", "always" ],
+        "operator-linebreak": "off",
+        "require-jsdoc": [ "warn", { "require": { "FunctionDeclaration": true, "MethodDefinition": true, "ClassDeclaration": true, "ArrowFunctionExpression": true } }],
+        "space-before-function-paren": [ "warn", "always" ],
+        "valid-jsdoc": [ "warn", { "requireReturnDescription": false, "requireParamDescription" : false } ],
+    },
+}
