@@ -1,6 +1,6 @@
 {
   "name": "soundcloud-stream-cleaner",
-  "description": "Userscript which allows you to delete unwanted tracks from your stream!",
+  "description": "Userscript which allows you to hide unwanted tracks and playlists from your stream!",
   "homepage": "https://github.com/iammordaty/soundcloud-stream-cleaner",
   "version": "0.0.1",
   "license": "CC-BY-3.0",
