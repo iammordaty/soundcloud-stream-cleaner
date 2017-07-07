@@ -8,7 +8,7 @@ const eslint = require('gulp-eslint');
 const gulp = require('gulp');
 const gutil = require('gulp-util');
 const plumber = require('gulp-plumber');
-const strip = require('gulp-strip-comments');
+const stripComments = require('gulp-strip-comments');
 
 /**
  * @param {String} error
@@ -21,14 +21,13 @@ gulp.task('build', [ 'lint' ], () => {
         'userscript/meta.js',
         'src/utils.js',
         'src/resource.js',
-        'src/resource.*.js',
-        'src/ui.js',
         'src/storage.js',
         'src/storage.*.js',
         'src/hero.js',
         'src/stream.js',
         'src/player.js',
         'src/streamcleaner.js',
+        'src/streamcleaner.*.js',
         'src/init.js',
     ];
 
@@ -36,7 +35,7 @@ gulp.task('build', [ 'lint' ], () => {
         .pipe(plumber({ errorHandler }))
         .pipe(concat('soundcloud-stream-cleaner.user.js'))
         .pipe(babel({ presets: [ 'es2015' ], plugins: [ 'array-includes', 'transform-remove-strict-mode' ] }))
-        .pipe(strip({
+        .pipe(stripComments({
             safe: true,
             ignore: /(\/\*\*\s*\n([^\*]*(\*[^\/])?)*\*\/|\/\/\s==UserScript==(.|\n)*?\/\/\s==\/UserScript==)/g,
             trim: true

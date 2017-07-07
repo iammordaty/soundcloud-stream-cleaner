@@ -28,9 +28,6 @@ const Resource = {
             deleted: this.deleted,
             element: this.element
         });
-
-        this.prepareUi();
-        this.updateUi();
     },
 
     /**
@@ -123,44 +120,6 @@ const Resource = {
         } else {
             Storage.DeletedResources.remove(this);
         }
-
-        this.updateUi();
-    },
-
-    /**
-     * @returns {undefined}
-     */
-    prepareUi () {
-        this.ui = Object.assign({}, Resource.Ui);
-    },
-
-    /**
-     * @returns {undefined}
-     */
-    updateUi () {
-        // update resource visibility
-
-        if (this.deleted === true && this.subtype === 'stream') {
-            this.ui.delete(this);
-        } else {
-            this.ui.undelete(this);
-        }
-
-        // update buttons state
-
-        if (this.subtype === 'player') {
-            return;
-        }
-
-        const button = (this.deleted === true)
-            ? this.ui.createUndeleteButton(this)
-            : this.ui.createDeleteButton(this);
-
-        button.addEventListener('click', () => {
-            this.deleted = !this.deleted;
-        }, false);
-
-        this.ui.appendButton(button, this);
     },
 };
 

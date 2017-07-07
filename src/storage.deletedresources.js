@@ -9,7 +9,7 @@ Storage.DeletedResources = {
      * @type {String}
      */
     get storageKey () {
-        return 'deleted_resources`';
+        return 'deleted_resources';
     },
 
     /**

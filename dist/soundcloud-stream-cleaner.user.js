@@ -4,7 +4,7 @@
 // @namespace https://github.com/iammordaty
 // @author iammordaty
 // @include https://soundcloud.com/*
-// @version 0.0.1
+// @version 0.0.2
 // @grant GM_addStyle
 // @grant GM_deleteValue
 // @grant GM_getValue
@@ -128,9 +128,6 @@ var Resource = {
             deleted: this.deleted,
             element: this.element
         });
-
-        this.prepareUi();
-        this.updateUi();
     },
 
 
@@ -225,184 +222,10 @@ var Resource = {
         } else {
             Storage.DeletedResources.remove(this);
         }
-
-        this.updateUi();
-    },
-
-    /**
-     * @returns {undefined}
-     */
-    prepareUi: function prepareUi() {
-        this.ui = Object.assign({}, Resource.Ui);
-    },
-
-
-    /**
-     * @returns {undefined}
-     */
-    updateUi: function updateUi() {
-        var _this2 = this;
-
-        if (this.deleted === true && this.subtype === 'stream') {
-            this.ui.delete(this);
-        } else {
-            this.ui.undelete(this);
-        }
-
-        if (this.subtype === 'player') {
-            return;
-        }
-
-        var button = this.deleted === true ? this.ui.createUndeleteButton(this) : this.ui.createDeleteButton(this);
-
-        button.addEventListener('click', function () {
-            _this2.deleted = !_this2.deleted;
-        }, false);
-
-        this.ui.appendButton(button, this);
     }
 };
 
 Object.assign(Resource, Utils);
-
-/**
- * Resource UI layer
- *
- * @type {Object}
- */
-Resource.Ui = {
-
-    /**
-     * @param {Object} resource
-     * @returns {undefined}
-     */
-    delete: function _delete(resource) {
-        if (this.deleted(resource) === true) {
-            return;
-        }
-
-        if (Storage.Settings.get('delete_mode') === 'hide') {
-            resource.element.classList.add('ssc-deleted', 'ssc-hide');
-
-            return;
-        }
-
-        var target = resource.element.querySelector('.soundContext__targetLink');
-        var username = resource.element.querySelector('.soundTitle__username');
-        var title = resource.element.querySelector('.soundTitle__title');
-        var dash = document.createElement('span');
-
-        dash.innerHTML = '&mdash;';
-
-        target.parentNode.insertBefore(username, target);
-        target.parentNode.insertBefore(dash, target);
-        target.parentNode.insertBefore(title, target);
-
-        resource.element.classList.add('ssc-deleted', 'ssc-compact');
-    },
-
-
-    /**
-     * @param {Object} resource
-     * @returns {undefined}
-     */
-    undelete: function undelete(resource) {
-        if (this.deleted(resource) === false) {
-            return;
-        }
-
-        resource.element.classList.remove('ssc-deleted', 'ssc-compact', 'ssc-hide');
-    },
-
-
-    /**
-     * @param {Object} resource
-     * @returns {Boolean}
-     */
-    deleted: function deleted(resource) {
-        return resource.element.classList.contains('ssc-deleted');
-    },
-
-
-    /**
-     * @param {Object} resource
-     * @returns {HTMLElement}
-     */
-    createDeleteButton: function createDeleteButton(resource) {
-        var button = this.createButton(resource);
-
-        button.innerHTML = 'Delete';
-        button.setAttribute('title', 'Delete this ' + resource.type + ' from stream');
-
-        return button;
-    },
-
-
-    /**
-     * @param {Object} resource
-     * @returns {HTMLElement}
-     */
-    createUndeleteButton: function createUndeleteButton(resource) {
-        var button = this.createButton(resource);
-
-        button.innerHTML = 'Undelete';
-        button.setAttribute('title', 'Undelete this ' + resource.type + ' from stream');
-
-        return button;
-    },
-
-
-    /**
-     * @param {HTMLElement} button
-     * @param {Object} resource
-     * @returns {undefined}
-     */
-    appendButton: function appendButton(button, resource) {
-        var previousButton = resource.element.querySelector('.ssc-button');
-
-        if (previousButton !== null) {
-            previousButton.parentNode.removeChild(previousButton);
-        }
-
-        var refNode = resource.element.querySelector('.sc-button-share');
-
-        refNode.parentNode.insertBefore(button, refNode);
-    },
-
-
-    /**
-     * @param {Object} resource
-     * @returns {HTMLElement}
-     */
-    createButton: function createButton(resource) {
-        var button = document.createElement('button');
-        var classList = this.getButtonClassList(resource);
-
-        button.classList.add.apply(button.classList, classList);
-        button.setAttribute('role', 'button');
-
-        return button;
-    },
-
-
-    /**
-     * @param {Object} resource
-     * @returns {Array}
-     */
-    getButtonClassList: function getButtonClassList(resource) {
-        var classList = ['ssc-button', 'sc-button-delete', 'sc-button', 'sc-button-responsive'];
-
-        if (resource.subtype === 'hero') {
-            classList.push('sc-button-medium');
-        } else if (resource.subtype === 'stream') {
-            classList.push('sc-button-small');
-        } else if (resource.subtype === 'playlist') {
-            classList.push('sc-button-icon', 'sc-button-small');
-        }
-
-        return classList;
-    }
-};
 
 /**
  * @type {Object}
@@ -452,7 +275,7 @@ Storage.DeletedResources = {
      * @type {String}
      */
     get storageKey() {
-        return 'deleted_resources`';
+        return 'deleted_resources';
     },
 
     /**
@@ -511,11 +334,15 @@ Storage.Settings = {
     },
 
     /**
+     *  Default settings:
+     *  delete_mode: 'hide' or 'compact'
+     *
      * @type {String}
      */
     get defaultSettings() {
         return {
-            delete_mode: 'hide' };
+            delete_mode: 'hide'
+        };
     },
 
     /**
@@ -569,8 +396,17 @@ var Hero = {
      */
     init: function init(app) {
         this.app = app;
+        this.hero = null;
 
         this.observe();
+    },
+
+
+    /**
+     * @returns {Boolean}
+     */
+    isActive: function isActive() {
+        return this.hero !== null;
     },
 
 
@@ -579,7 +415,7 @@ var Hero = {
      * @returns {undefined}
      */
     observe: function observe() {
-        var _this3 = this;
+        var _this2 = this;
 
         var observers = {};
 
@@ -594,10 +430,10 @@ var Hero = {
 
             lastResourceUrl = currentResourceUrl;
 
-            var hero = _this3.app.querySelector('.fullListenHero');
+            _this2.hero = _this2.app.querySelector('.fullListenHero');
 
-            if (observers.playlist !== undefined || hero === null) {
-                if (observers.playlist !== undefined && hero === null) {
+            if (observers.playlist !== undefined || _this2.hero === null) {
+                if (observers.playlist !== undefined && _this2.hero === null) {
                     observers.playlist.disconnect();
 
                     delete observers.playlist;
@@ -608,18 +444,18 @@ var Hero = {
                 return;
             }
 
-            var element = _this3.app.querySelector('#content > div');
+            var element = _this2.app.querySelector('#content > div');
             var playlist = element.querySelector('.trackList ul');
 
-            _this3.trigger('changed', Resource.create(element));
+            _this2.trigger('changed', Resource.create(element));
 
             if (playlist === null) {
                 return;
             }
 
             playlist.querySelectorAll('.trackList__item').forEach(function (resourceElement) {
-                _this3.waitForResourceElementLoad(resourceElement).then(function () {
-                    _this3.trigger('changed', Resource.create(resourceElement));
+                _this2.waitForResourceElementLoad(resourceElement).then(function () {
+                    _this2.trigger('changed', Resource.create(resourceElement));
                 });
             });
 
@@ -637,8 +473,8 @@ var Hero = {
                 if (additional !== undefined) {
                     var resourceElement = additional.parentNode.parentNode;
 
-                    _this3.waitForResourceElementLoad(resourceElement).then(function () {
-                        _this3.trigger('changed', Resource.create(resourceElement));
+                    _this2.waitForResourceElementLoad(resourceElement).then(function () {
+                        _this2.trigger('changed', Resource.create(resourceElement));
                     });
                 }
             });
@@ -662,7 +498,7 @@ var Hero = {
      * @returns {Promise}
      */
     waitForResourceElementLoad: function waitForResourceElementLoad(element) {
-        var _this4 = this;
+        var _this3 = this;
 
         return new Promise(function (resolve) {
             var observer = new MutationObserver(function () {
@@ -673,7 +509,7 @@ var Hero = {
                 }
             });
 
-            observer.observe(_this4.app, {
+            observer.observe(_this3.app, {
                 childList: true,
                 subtree: true
             });
@@ -706,12 +542,12 @@ var Stream = {
      * @returns {undefined}
      */
     observe: function observe() {
-        var _this5 = this;
+        var _this4 = this;
 
         var observers = {};
 
         observers.app = new MutationObserver(this.throttle(function () {
-            var stream = _this5.app.querySelector('#content div.stream ul');
+            var stream = _this4.app.querySelector('#content div.stream ul');
 
             if (observers.stream !== undefined || stream === null) {
                 if (observers.stream !== undefined && stream === null) {
@@ -724,13 +560,13 @@ var Stream = {
             }
 
             stream.querySelectorAll('.soundList__item').forEach(function (element) {
-                _this5.trigger('changed', Resource.create(element));
+                _this4.trigger('changed', Resource.create(element));
             });
 
             observers.stream = new MutationObserver(function (mutations) {
                 for (var i = 0; i < mutations.length; i++) {
                     mutations[i].addedNodes.forEach(function (element) {
-                        _this5.trigger('changed', Resource.create(element));
+                        _this4.trigger('changed', Resource.create(element));
                     });
                 }
             });
@@ -761,7 +597,7 @@ var Player = {
      * @returns {undefined}
      */
     init: function init(app) {
-        var _this6 = this;
+        var _this5 = this;
 
         this.app = app;
 
@@ -769,16 +605,16 @@ var Player = {
         this.direction = 'forward';
 
         this.getElement().then(function (element) {
-            _this6.element = element;
-            _this6.resourceElement = element.querySelector('.playbackSoundBadge');
+            _this5.element = element;
+            _this5.resourceElement = element.querySelector('.playbackSoundBadge');
 
-            _this6.controls = {
-                prev: _this6.element.querySelector('.playControls__control.playControls__prev'),
-                play: _this6.element.querySelector('.playControls__control.playControls__play'),
-                next: _this6.element.querySelector('.playControls__control.playControls__next')
+            _this5.controls = {
+                prev: _this5.element.querySelector('.playControls__control.playControls__prev'),
+                play: _this5.element.querySelector('.playControls__control.playControls__play'),
+                next: _this5.element.querySelector('.playControls__control.playControls__next')
             };
 
-            _this6.observe();
+            _this5.observe();
         });
     },
 
@@ -850,17 +686,17 @@ var Player = {
      * @returns {undefined}
      */
     observe: function observe() {
-        var _this7 = this;
+        var _this6 = this;
 
         var observers = {};
 
         var lastState = void 0;
 
         observers.state = new MutationObserver(function () {
-            var state = _this7.state;
+            var state = _this6.state;
 
             if (state !== lastState) {
-                _this7.trigger('statechanged', _this7.state);
+                _this6.trigger('statechanged', _this6.state);
 
                 lastState = state;
             }
@@ -872,7 +708,7 @@ var Player = {
         });
 
         observers.resource = new MutationObserver(function () {
-            _this7.trigger('resourcechanged', Resource.create(_this7.resourceElement));
+            _this6.trigger('resourcechanged', Resource.create(_this6.resourceElement));
         });
 
         observers.resource.observe(this.resourceElement, {
@@ -885,18 +721,18 @@ var Player = {
             }
 
             if (event.keyCode === 37) {
-                _this7.direction = 'backward';
+                _this6.direction = 'backward';
             } else if (event.keyCode === 39) {
-                _this7.direction = 'forward';
+                _this6.direction = 'forward';
             }
         }, true);
 
         this.controls.prev.addEventListener('click', function () {
-            _this7.direction = 'backward';
+            _this6.direction = 'backward';
         }, true);
 
         this.controls.next.addEventListener('click', function () {
-            _this7.direction = 'forward';
+            _this6.direction = 'forward';
         }, true);
     },
 
@@ -906,11 +742,11 @@ var Player = {
      * @returns {Promise}
      */
     getElement: function getElement() {
-        var _this8 = this;
+        var _this7 = this;
 
         return new Promise(function (resolve) {
-            var observer = new MutationObserver(_this8.throttle(function () {
-                var element = _this8.app.querySelector('.playControls');
+            var observer = new MutationObserver(_this7.throttle(function () {
+                var element = _this7.app.querySelector('.playControls');
 
                 if (element !== null) {
                     observer.disconnect();
@@ -919,7 +755,7 @@ var Player = {
                 }
             }), 500);
 
-            observer.observe(_this8.app, {
+            observer.observe(_this7.app, {
                 childList: true,
                 subtree: true
             });
@@ -940,11 +776,21 @@ var StreamCleaner = {
     init: function init() {
         this.app = document.querySelector('#app');
 
+        this.createUi();
+
         this.createHero();
         this.createPlayer();
         this.createStream();
+    },
 
-        this.setStyles();
+
+    /**
+     * @private
+     * @returns {undefined}
+     */
+    createUi: function createUi() {
+        this.ui = Object.create(StreamCleaner.Ui);
+        this.ui.init();
     },
 
 
@@ -953,8 +799,14 @@ var StreamCleaner = {
      * @returns {undefined}
      */
     createHero: function createHero() {
+        var _this8 = this;
+
         this.hero = Object.create(Hero);
         this.hero.init(this.app);
+
+        this.hero.on('changed', function (resource) {
+            _this8.updateResourceUi(resource);
+        });
     },
 
 
@@ -969,7 +821,7 @@ var StreamCleaner = {
         this.player.init(this.app);
 
         this.player.on('resourcechanged', function (resource) {
-            if (resource.deleted === true) {
+            if (resource.deleted === true && _this9.hero.isActive() === false) {
                 _this9.player.skip();
             }
         });
@@ -981,8 +833,198 @@ var StreamCleaner = {
      * @returns {undefined}
      */
     createStream: function createStream() {
+        var _this10 = this;
+
         this.stream = Object.create(Stream);
         this.stream.init(this.app);
+
+        this.stream.on('changed', function (resource) {
+            _this10.updateResourceUi(resource);
+        });
+    },
+
+
+    /**
+     * @private
+     * @param {Object} resource
+     * @returns {undefined}
+     */
+    updateResourceUi: function updateResourceUi(resource) {
+        var _this11 = this;
+
+        if (resource.deleted === true) {
+            this.ui.delete(resource);
+        } else {
+            this.ui.undelete(resource);
+        }
+
+        if (resource.subtype === 'player') {
+            return;
+        }
+
+        var button = resource.deleted === true ? this.ui.createUndeleteButton(resource) : this.ui.createDeleteButton(resource);
+
+        button.addEventListener('click', function () {
+            resource.deleted = !resource.deleted;
+
+            _this11.updateResourceUi(resource);
+        }, false);
+
+        this.ui.appendButton(button, resource);
+    }
+};
+
+/**
+ * UI layer
+ *
+ * @type {Object}
+ */
+StreamCleaner.Ui = {
+
+    /**
+     * @returns {undefined}
+     */
+    init: function init() {
+        this.addStyles();
+    },
+
+
+    /**
+     * @param {Object} resource
+     * @returns {undefined}
+     */
+    delete: function _delete(resource) {
+        if (this.deleted(resource) === true) {
+            return;
+        }
+
+        resource.element.classList.add('ssc-deleted');
+
+        if (resource.subtype !== 'stream') {
+            return;
+        }
+
+        if (Storage.Settings.get('delete_mode') === 'hide') {
+            resource.element.classList.add('ssc-hide');
+
+            return;
+        }
+
+        var target = resource.element.querySelector('.soundContext__targetLink');
+        var username = resource.element.querySelector('.soundTitle__username');
+        var title = resource.element.querySelector('.soundTitle__title');
+        var dash = document.createElement('span');
+
+        dash.innerHTML = '&mdash;';
+
+        target.parentNode.insertBefore(username, target);
+        target.parentNode.insertBefore(dash, target);
+        target.parentNode.insertBefore(title, target);
+
+        resource.element.classList.add('ssc-compact');
+    },
+
+
+    /**
+     * @param {Object} resource
+     * @returns {undefined}
+     */
+    undelete: function undelete(resource) {
+        if (this.deleted(resource) === true) {
+            resource.element.classList.remove('ssc-deleted', 'ssc-compact', 'ssc-hide');
+        }
+    },
+
+
+    /**
+     * @param {Object} resource
+     * @returns {Boolean}
+     */
+    deleted: function deleted(resource) {
+        return resource.element.classList.contains('ssc-deleted');
+    },
+
+
+    /**
+     * @param {Object} resource
+     * @returns {HTMLElement}
+     */
+    createDeleteButton: function createDeleteButton(resource) {
+        var button = this.createButton(resource);
+
+        button.innerHTML = 'Delete';
+        button.setAttribute('title', 'Delete this ' + resource.type + ' from stream');
+
+        return button;
+    },
+
+
+    /**
+     * @param {Object} resource
+     * @returns {HTMLElement}
+     */
+    createUndeleteButton: function createUndeleteButton(resource) {
+        var button = this.createButton(resource);
+
+        button.innerHTML = 'Deleted';
+        button.classList.add('sc-button-selected');
+        button.setAttribute('title', 'Undelete this ' + resource.type + ' from stream');
+
+        return button;
+    },
+
+
+    /**
+     * @param {HTMLElement} button
+     * @param {Object} resource
+     * @returns {undefined}
+     */
+    appendButton: function appendButton(button, resource) {
+        var previousButton = resource.element.querySelector('.ssc-button');
+
+        if (previousButton !== null) {
+            previousButton.parentNode.removeChild(previousButton);
+        }
+
+        var refNode = resource.element.querySelector('.sc-button-share');
+
+        refNode.parentNode.insertBefore(button, refNode);
+    },
+
+
+    /**
+     * @private
+     * @param {Object} resource
+     * @returns {HTMLElement}
+     */
+    createButton: function createButton(resource) {
+        var button = document.createElement('button');
+        var classList = this.getButtonClassList(resource);
+
+        button.classList.add.apply(button.classList, classList);
+        button.setAttribute('role', 'button');
+
+        return button;
+    },
+
+
+    /**
+     * @private
+     * @param {Object} resource
+     * @returns {Array}
+     */
+    getButtonClassList: function getButtonClassList(resource) {
+        var classList = ['ssc-button', 'sc-button-delete', 'sc-button', 'sc-button-responsive'];
+
+        if (resource.subtype === 'hero') {
+            classList.push('sc-button-medium');
+        } else if (resource.subtype === 'stream') {
+            classList.push('sc-button-small');
+        } else if (resource.subtype === 'playlist') {
+            classList.push('sc-button-icon', 'sc-button-small');
+        }
+
+        return classList;
     },
 
 
@@ -990,8 +1032,8 @@ var StreamCleaner = {
      * @private
      * @returns {undefined}
      */
-    setStyles: function setStyles() {
-        GM_addStyle(['.ssc-deleted.ssc-compact { margin-bottom: 0 }', '.ssc-deleted.ssc-compact .soundContext__targetLink, .ssc-deleted.ssc-compact .sound__body, .ssc-deleted.ssc-hide { visibility: hidden; height: 0px; margin-bottom: 0  }', '.ssc-deleted .coverArt__infoItem { display: none }', '.ssc-deleted .g-all-transitions-300 { transition: none }'].join(' '));
+    addStyles: function addStyles() {
+        GM_addStyle(['.ssc-deleted.ssc-compact { margin-bottom: 0 }', '.ssc-deleted.ssc-compact .sound__body, .ssc-deleted.ssc-hide { visibility: hidden; height: 0px; margin-bottom: 0  }', '.ssc-deleted.ssc-hide .coverArt__infoItem, .ssc-deleted.ssc-hide .addToNextUp { display: none }', '.ssc-deleted.ssc-hide .g-all-transitions-300 { transition: none }', '.ssc-deleted .ssc-button.sc-button-delete.sc-button-icon.sc-button-selected:before { background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+IDx0aXRsZT5JbXBvcnRlZCBMYXllcnM8L3RpdGxlPiA8Zz4gIDx0aXRsZT5iYWNrZ3JvdW5kPC90aXRsZT4gIDxyZWN0IGZpbGw9Im5vbmUiIGlkPSJjYW52YXNfYmFja2dyb3VuZCIgaGVpZ2h0PSIxOCIgd2lkdGg9IjE4IiB5PSItMSIgeD0iLTEiLz4gPC9nPiA8Zz4gIDx0aXRsZT5MYXllciAxPC90aXRsZT4gIDxwYXRoIGlkPSJzdmdfMSIgZmlsbC1ydWxlPSJldmVub2RkIiBmaWxsPSIjZjUwIiBkPSJtOS45NjgsM2wxLjAxNCwwYzIuMDE4LDAgMi4wMTgsMiAyLjAxOCwybC0xMCwwczAuMDksLTIgMi4wODgsLTJsMC45NDMsMGMwLjUyLC0wLjYxNSAxLjMyNCwtMS4wMDEgMS45NjksLTEuMDAxYzAuNjQzLDAgMS40NDcsMC4zODYgMS45NjgsMS4wMDF6bS01Ljk2OCwzbDAsNi4wMDJjMCwxLjEwMyAwLjg4NywxLjk5OCAxLjk5OCwxLjk5OGw0LjAwNCwwYTEuOTkzLDEuOTkzIDAgMCAwIDEuOTk4LC0xLjk5OGwwLC02LjAwMmwtOCwweiIvPiA8L2c+PC9zdmc+);}'].join(' '));
     }
 };
 

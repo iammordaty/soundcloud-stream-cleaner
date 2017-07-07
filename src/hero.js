@@ -14,8 +14,16 @@ const Hero = {
      */
     init (app) {
         this.app = app;
+        this.hero = null;
 
         this.observe();
+    },
+
+    /**
+     * @returns {Boolean}
+     */
+    isActive () {
+        return this.hero !== null;
     },
 
     /**
@@ -36,10 +44,10 @@ const Hero = {
 
             lastResourceUrl = currentResourceUrl;
 
-            const hero = this.app.querySelector('.fullListenHero');
+            this.hero = this.app.querySelector('.fullListenHero');
 
-            if (observers.playlist !== undefined || hero === null) {
-                if (observers.playlist !== undefined && hero === null) {
+            if (observers.playlist !== undefined || this.hero === null) {
+                if (observers.playlist !== undefined && this.hero === null) {
                     observers.playlist.disconnect();
 
                     delete observers.playlist;

@@ -13,11 +13,14 @@ Storage.Settings = {
     },
 
     /**
+     *  Default settings:
+     *  delete_mode: 'hide' or 'compact'
+     *
      * @type {String}
      */
     get defaultSettings () {
         return {
-            delete_mode: 'hide', // [ 'hide', 'compact' ]
+            delete_mode: 'hide',
         };
     },
 
