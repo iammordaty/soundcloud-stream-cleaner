@@ -13,7 +13,7 @@ Storage.Settings = {
     },
 
     /**
-     *  Default settings:
+     * Default settings:
      *  delete_mode: 'hide' or 'compact'
      *
      * @type {String}

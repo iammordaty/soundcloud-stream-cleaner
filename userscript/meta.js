@@ -4,7 +4,7 @@
 // @namespace https://github.com/iammordaty
 // @author iammordaty
 // @include https://soundcloud.com/*
-// @version 0.0.2
+// @version 0.0.3
 // @grant GM_addStyle
 // @grant GM_deleteValue
 // @grant GM_getValue

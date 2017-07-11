@@ -1,12 +1,14 @@
 /* eslint-env node */
 
 const babel = require('gulp-babel');
+const cleanCss = new (require('clean-css'));
 const concat = require('gulp-concat');
 const connect = require('gulp-connect');
 const del = require('del');
 const eslint = require('gulp-eslint');
 const gulp = require('gulp');
 const gutil = require('gulp-util');
+const inject = require('gulp-inject');
 const plumber = require('gulp-plumber');
 const stripComments = require('gulp-strip-comments');
 
@@ -15,6 +17,20 @@ const stripComments = require('gulp-strip-comments');
  * @returns {undefined}
  */
 const errorHandler = (error) => gutil.log(error.message);
+
+/**
+ * @param {String} filePath
+ * @returns {undefined}
+ */
+const injectStyles = (filePath) => {
+    return inject(gulp.src(filePath), {
+        starttag: '<!-- css:inject:start -->',
+        endtag: '<!-- css:inject:end -->',
+        removeTags: true,
+        quiet: true,
+        transform: (_, file) => cleanCss.minify(file.contents.toString('utf8')).styles
+    })
+};
 
 gulp.task('build', [ 'lint' ], () => {
     const sources = [
@@ -35,9 +51,10 @@ gulp.task('build', [ 'lint' ], () => {
         .pipe(plumber({ errorHandler }))
         .pipe(concat('soundcloud-stream-cleaner.user.js'))
         .pipe(babel({ presets: [ 'es2015' ], plugins: [ 'array-includes', 'transform-remove-strict-mode' ] }))
+        .pipe(injectStyles('src/streamcleaner.ui.css'))
         .pipe(stripComments({
             safe: true,
-            ignore: /(\/\*\*\s*\n([^\*]*(\*[^\/])?)*\*\/|\/\/\s==UserScript==(.|\n)*?\/\/\s==\/UserScript==)/g,
+            ignore: /(\/\*\*\s*\n([^*]*(\*[^/])?)*\*\/|\/\/\s==UserScript==(.|\n)*?\/\/\s==\/UserScript==)/g,
             trim: true
         }))
         .pipe(gulp.dest('dist/'));
