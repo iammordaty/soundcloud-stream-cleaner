@@ -56,7 +56,9 @@ const Utils = {
             fn.apply(this, args);
             wait = true;
 
-            setTimeout(() => (wait = false), delay);
+            setTimeout(() => {
+                wait = false;
+            }, delay);
         };
     },
 

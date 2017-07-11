@@ -4,7 +4,7 @@
 // @namespace https://github.com/iammordaty
 // @author iammordaty
 // @include https://soundcloud.com/*
-// @version 0.0.4
+// @version 0.0.5
 // @grant GM_addStyle
 // @grant GM_deleteValue
 // @grant GM_getValue
@@ -75,7 +75,7 @@ var Utils = {
             wait = true;
 
             setTimeout(function () {
-                return wait = false;
+                wait = false;
             }, delay);
         };
     },
