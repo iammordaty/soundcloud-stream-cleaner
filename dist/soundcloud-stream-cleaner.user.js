@@ -36,7 +36,6 @@ var Utils = {
         this.handlers[event].push(handler);
     },
 
-
     /**
      * @param {String} event
      * @returns {undefined}
@@ -53,18 +52,15 @@ var Utils = {
         });
     },
 
-
     /**
      * @param {Function} fn
      * @param {Integer} delay
      * @returns {Function}
      */
     throttle: function throttle(fn, delay) {
-        var _this = this;
-
-        var args = [].slice.call(arguments);
-
-        var wait = false;
+        var _this = this,
+            args = [].slice.call(arguments),
+            wait = false;
 
         return function () {
             if (wait === true) {
@@ -79,7 +75,6 @@ var Utils = {
             }, delay);
         };
     },
-
 
     /**
      * @param {String} url
@@ -130,7 +125,6 @@ var Resource = {
         });
     },
 
-
     /**
      * @param {HTMLElement} element
      * @returns {Object}
@@ -142,7 +136,6 @@ var Resource = {
 
         return resource;
     },
-
 
     /**
      * @type {String}
@@ -241,7 +234,6 @@ var Storage = {
         GM_setValue(key, JSON.stringify(value));
     },
 
-
     /**
      * @param {String} key
      * @returns {*}
@@ -255,7 +247,6 @@ var Storage = {
 
         return JSON.parse(value);
     },
-
 
     /**
      * @param {String} key
@@ -292,7 +283,6 @@ Storage.DeletedResources = {
         Storage.set(this.storageKey, this.deletedResources);
     },
 
-
     /**
      * @param {Object} resource
      * @returns {Boolean}
@@ -304,7 +294,6 @@ Storage.DeletedResources = {
 
         return this.deletedResources.indexOf(resource.url) !== -1;
     },
-
 
     /**
      * @param {Object} resource
@@ -360,7 +349,6 @@ Storage.Settings = {
         Storage.set(this.storageKey, this.settings);
     },
 
-
     /**
      * @param {String} key
      * @returns {*}
@@ -370,7 +358,6 @@ Storage.Settings = {
 
         return this.settings[key];
     },
-
 
     /**
      * @param {Object} key
@@ -401,7 +388,6 @@ var Hero = {
         this.observe();
     },
 
-
     /**
      * @returns {Boolean}
      */
@@ -409,17 +395,14 @@ var Hero = {
         return this.hero !== null;
     },
 
-
     /**
      * @private
      * @returns {undefined}
      */
     observe: function observe() {
-        var _this2 = this;
-
-        var observers = {};
-
-        var lastResourceUrl = void 0;
+        var _this = this,
+            observers = {},
+            lastResourceUrl = void 0;
 
         observers.app = new MutationObserver(this.throttle(function () {
             var currentResourceUrl = window.location.href;
@@ -430,10 +413,10 @@ var Hero = {
 
             lastResourceUrl = currentResourceUrl;
 
-            _this2.hero = _this2.app.querySelector('.fullListenHero');
+            _this.hero = _this.app.querySelector('.fullListenHero');
 
-            if (observers.playlist !== undefined || _this2.hero === null) {
-                if (observers.playlist !== undefined && _this2.hero === null) {
+            if (observers.playlist !== undefined || _this.hero === null) {
+                if (observers.playlist !== undefined && _this.hero === null) {
                     observers.playlist.disconnect();
 
                     delete observers.playlist;
@@ -444,18 +427,18 @@ var Hero = {
                 return;
             }
 
-            var element = _this2.app.querySelector('#content > div');
-            var playlist = element.querySelector('.trackList ul');
+            var element = _this.app.querySelector('#content > div'),
+                playlist = element.querySelector('.trackList ul');
 
-            _this2.trigger('changed', Resource.create(element));
+            _this.trigger('changed', Resource.create(element));
 
             if (playlist === null) {
                 return;
             }
 
             playlist.querySelectorAll('.trackList__item').forEach(function (resourceElement) {
-                _this2.waitForResourceElementLoad(resourceElement).then(function () {
-                    _this2.trigger('changed', Resource.create(resourceElement));
+                _this.waitForResourceElementLoad(resourceElement).then(function () {
+                    _this.trigger('changed', Resource.create(resourceElement));
                 });
             });
 
@@ -473,8 +456,8 @@ var Hero = {
                 if (additional !== undefined) {
                     var resourceElement = additional.parentNode.parentNode;
 
-                    _this2.waitForResourceElementLoad(resourceElement).then(function () {
-                        _this2.trigger('changed', Resource.create(resourceElement));
+                    _this.waitForResourceElementLoad(resourceElement).then(function () {
+                        _this.trigger('changed', Resource.create(resourceElement));
                     });
                 }
             });
@@ -491,14 +474,13 @@ var Hero = {
         });
     },
 
-
     /**
      * @private
      * @param {HTMLElement} element
      * @returns {Promise}
      */
     waitForResourceElementLoad: function waitForResourceElementLoad(element) {
-        var _this3 = this;
+        var _this2 = this;
 
         return new Promise(function (resolve) {
             var observer = new MutationObserver(function () {
@@ -509,7 +491,7 @@ var Hero = {
                 }
             });
 
-            observer.observe(_this3.app, {
+            observer.observe(_this2.app, {
                 childList: true,
                 subtree: true
             });
@@ -536,18 +518,16 @@ var Stream = {
         this.observe();
     },
 
-
     /**
      * @private
      * @returns {undefined}
      */
     observe: function observe() {
-        var _this4 = this;
-
-        var observers = {};
+        var _this = this,
+            observers = {};
 
         observers.app = new MutationObserver(this.throttle(function () {
-            var stream = _this4.app.querySelector('#content div.stream ul');
+            var stream = _this.app.querySelector('#content div.stream ul');
 
             if (observers.stream !== undefined || stream === null) {
                 if (observers.stream !== undefined && stream === null) {
@@ -560,13 +540,13 @@ var Stream = {
             }
 
             stream.querySelectorAll('.soundList__item').forEach(function (element) {
-                _this4.trigger('changed', Resource.create(element));
+                _this.trigger('changed', Resource.create(element));
             });
 
             observers.stream = new MutationObserver(function (mutations) {
                 for (var i = 0; i < mutations.length; i++) {
                     mutations[i].addedNodes.forEach(function (element) {
-                        _this4.trigger('changed', Resource.create(element));
+                        _this.trigger('changed', Resource.create(element));
                     });
                 }
             });
@@ -597,7 +577,7 @@ var Player = {
      * @returns {undefined}
      */
     init: function init(app) {
-        var _this5 = this;
+        var _this = this;
 
         this.app = app;
 
@@ -605,19 +585,18 @@ var Player = {
         this.direction = 'forward';
 
         this.getElement().then(function (element) {
-            _this5.element = element;
-            _this5.resourceElement = element.querySelector('.playbackSoundBadge');
+            _this.element = element;
+            _this.resourceElement = element.querySelector('.playbackSoundBadge');
 
-            _this5.controls = {
-                prev: _this5.element.querySelector('.playControls__control.playControls__prev'),
-                play: _this5.element.querySelector('.playControls__control.playControls__play'),
-                next: _this5.element.querySelector('.playControls__control.playControls__next')
+            _this.controls = {
+                prev: _this.element.querySelector('.playControls__control.playControls__prev'),
+                play: _this.element.querySelector('.playControls__control.playControls__play'),
+                next: _this.element.querySelector('.playControls__control.playControls__next')
             };
 
-            _this5.observe();
+            _this.observe();
         });
     },
-
 
     /**
      * @returns {undefined}
@@ -630,7 +609,6 @@ var Player = {
         this.controls.prev.dispatchEvent(new Event('click'));
     },
 
-
     /**
      * @returns {undefined}
      */
@@ -641,7 +619,6 @@ var Player = {
 
         this.controls.next.dispatchEvent(new Event('click'));
     },
-
 
     /**
      * @returns {undefined}
@@ -654,14 +631,12 @@ var Player = {
         }
     },
 
-
     /**
      * @returns {Object|null}
      */
     getResource: function getResource() {
         return this.resourceElement !== undefined ? Resource.create(this.resourceElement) : null;
     },
-
 
     /**
      * @returns {String|undefined}
@@ -686,17 +661,15 @@ var Player = {
      * @returns {undefined}
      */
     observe: function observe() {
-        var _this6 = this;
-
-        var observers = {};
-
-        var lastState = void 0;
+        var _this2 = this,
+            observers = {},
+            lastState = void 0;
 
         observers.state = new MutationObserver(function () {
-            var state = _this6.state;
+            var state = _this2.state;
 
             if (state !== lastState) {
-                _this6.trigger('statechanged', _this6.state);
+                _this2.trigger('statechanged', _this2.state);
 
                 lastState = state;
             }
@@ -708,7 +681,7 @@ var Player = {
         });
 
         observers.resource = new MutationObserver(function () {
-            _this6.trigger('resourcechanged', Resource.create(_this6.resourceElement));
+            _this2.trigger('resourcechanged', Resource.create(_this2.resourceElement));
         });
 
         observers.resource.observe(this.resourceElement, {
@@ -721,32 +694,31 @@ var Player = {
             }
 
             if (event.keyCode === 37) {
-                _this6.direction = 'backward';
+                _this2.direction = 'backward';
             } else if (event.keyCode === 39) {
-                _this6.direction = 'forward';
+                _this2.direction = 'forward';
             }
         }, true);
 
         this.controls.prev.addEventListener('click', function () {
-            _this6.direction = 'backward';
+            _this2.direction = 'backward';
         }, true);
 
         this.controls.next.addEventListener('click', function () {
-            _this6.direction = 'forward';
+            _this2.direction = 'forward';
         }, true);
     },
-
 
     /**
      * @private
      * @returns {Promise}
      */
     getElement: function getElement() {
-        var _this7 = this;
+        var _this3 = this;
 
         return new Promise(function (resolve) {
-            var observer = new MutationObserver(_this7.throttle(function () {
-                var element = _this7.app.querySelector('.playControls');
+            var observer = new MutationObserver(_this3.throttle(function () {
+                var element = _this3.app.querySelector('.playControls');
 
                 if (element !== null) {
                     observer.disconnect();
@@ -755,7 +727,7 @@ var Player = {
                 }
             }), 500);
 
-            observer.observe(_this7.app, {
+            observer.observe(_this3.app, {
                 childList: true,
                 subtree: true
             });
@@ -783,7 +755,6 @@ var StreamCleaner = {
         this.createStream();
     },
 
-
     /**
      * @private
      * @returns {undefined}
@@ -793,56 +764,52 @@ var StreamCleaner = {
         this.ui.init();
     },
 
-
     /**
      * @private
      * @returns {undefined}
      */
     createHero: function createHero() {
-        var _this8 = this;
+        var _this = this;
 
         this.hero = Object.create(Hero);
         this.hero.init(this.app);
 
         this.hero.on('changed', function (resource) {
-            _this8.updateResourceUi(resource);
+            _this.updateResourceUi(resource);
         });
     },
-
 
     /**
      * @private
      * @returns {undefined}
      */
     createPlayer: function createPlayer() {
-        var _this9 = this;
+        var _this2 = this;
 
         this.player = Object.create(Player);
         this.player.init(this.app);
 
         this.player.on('resourcechanged', function (resource) {
-            if (resource.deleted === true && _this9.hero.isActive() === false) {
-                _this9.player.skip();
+            if (resource.deleted === true && _this2.hero.isActive() === false) {
+                _this2.player.skip();
             }
         });
     },
-
 
     /**
      * @private
      * @returns {undefined}
      */
     createStream: function createStream() {
-        var _this10 = this;
+        var _this3 = this;
 
         this.stream = Object.create(Stream);
         this.stream.init(this.app);
 
         this.stream.on('changed', function (resource) {
-            _this10.updateResourceUi(resource);
+            _this3.updateResourceUi(resource);
         });
     },
-
 
     /**
      * @private
@@ -850,7 +817,7 @@ var StreamCleaner = {
      * @returns {undefined}
      */
     updateResourceUi: function updateResourceUi(resource) {
-        var _this11 = this;
+        var _this4 = this;
 
         if (resource.deleted === true) {
             this.ui.delete(resource);
@@ -867,7 +834,7 @@ var StreamCleaner = {
         button.addEventListener('click', function () {
             resource.deleted = !resource.deleted;
 
-            _this11.updateResourceUi(resource);
+            _this4.updateResourceUi(resource);
         }, false);
 
         this.ui.appendButton(button, resource);
@@ -887,7 +854,6 @@ StreamCleaner.Ui = {
     init: function init() {
         this.addStyles();
     },
-
 
     /**
      * @param {Object} resource
@@ -910,10 +876,10 @@ StreamCleaner.Ui = {
             return;
         }
 
-        var target = resource.element.querySelector('.soundContext__targetLink');
-        var username = resource.element.querySelector('.soundTitle__username');
-        var title = resource.element.querySelector('.soundTitle__title');
-        var dash = document.createElement('span');
+        var target = resource.element.querySelector('.soundContext__targetLink'),
+            username = resource.element.querySelector('.soundTitle__username'),
+            title = resource.element.querySelector('.soundTitle__title'),
+            dash = document.createElement('span');
 
         dash.innerHTML = '&mdash;';
 
@@ -923,7 +889,6 @@ StreamCleaner.Ui = {
 
         resource.element.classList.add('ssc-compact');
     },
-
 
     /**
      * @param {Object} resource
@@ -935,7 +900,6 @@ StreamCleaner.Ui = {
         }
     },
 
-
     /**
      * @param {Object} resource
      * @returns {Boolean}
@@ -943,7 +907,6 @@ StreamCleaner.Ui = {
     deleted: function deleted(resource) {
         return resource.element.classList.contains('ssc-deleted');
     },
-
 
     /**
      * @param {Object} resource
@@ -958,7 +921,6 @@ StreamCleaner.Ui = {
         return button;
     },
 
-
     /**
      * @param {Object} resource
      * @returns {HTMLElement}
@@ -972,7 +934,6 @@ StreamCleaner.Ui = {
 
         return button;
     },
-
 
     /**
      * @param {HTMLElement} button
@@ -991,22 +952,20 @@ StreamCleaner.Ui = {
         refNode.parentNode.insertBefore(button, refNode);
     },
 
-
     /**
      * @private
      * @param {Object} resource
      * @returns {HTMLElement}
      */
     createButton: function createButton(resource) {
-        var button = document.createElement('button');
-        var classList = this.getButtonClassList(resource);
+        var button = document.createElement('button'),
+            classList = this.getButtonClassList(resource);
 
         button.classList.add.apply(button.classList, classList);
         button.setAttribute('role', 'button');
 
         return button;
     },
-
 
     /**
      * @private
@@ -1026,7 +985,6 @@ StreamCleaner.Ui = {
 
         return classList;
     },
-
 
     /**
      * @private

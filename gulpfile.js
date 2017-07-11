@@ -10,6 +10,7 @@ const gulp = require('gulp');
 const gutil = require('gulp-util');
 const inject = require('gulp-inject');
 const plumber = require('gulp-plumber');
+const replace = require('gulp-replace');
 const stripComments = require('gulp-strip-comments');
 
 /**
@@ -49,8 +50,9 @@ gulp.task('build', [ 'lint' ], () => {
 
     return gulp.src(sources)
         .pipe(plumber({ errorHandler }))
-        .pipe(concat('soundcloud-stream-cleaner.user.js'))
-        .pipe(babel({ presets: [ 'es2015' ], plugins: [ 'array-includes', 'transform-remove-strict-mode' ] }))
+        .pipe(babel({ presets: [ 'es2015' ], plugins: [ 'array-includes', 'transform-remove-strict-mode', 'transform-merge-sibling-variables' ] }))
+        .pipe(concat('soundcloud-stream-cleaner.user.js', { newLine: '\n\n' }))
+        .pipe(replace('\n\n\n', '\n\n'))
         .pipe(injectStyles('src/streamcleaner.ui.css'))
         .pipe(stripComments({
             safe: true,
