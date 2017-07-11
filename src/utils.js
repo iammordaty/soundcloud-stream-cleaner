@@ -44,17 +44,17 @@ const Utils = {
      * @returns {Function}
      */
     throttle (fn, delay) {
-        let wait = false;
+        let timer = null;
 
-        return (...argsArr) => {
-            if (!wait) {
-                fn.apply(this, argsArr);
-                wait = true;
+        return () => {
+            const context = this;
+            const args = [].slice.call(arguments);
 
-                setTimeout(() => {
-                    wait = false;
-                }, delay);
-            }
+            clearTimeout(timer);
+
+            timer = setTimeout(() => {
+                fn.apply(context, args);
+            }, delay);
         };
     },
 
