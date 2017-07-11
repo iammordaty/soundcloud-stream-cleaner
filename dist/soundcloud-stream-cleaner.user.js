@@ -4,7 +4,7 @@
 // @namespace https://github.com/iammordaty
 // @author iammordaty
 // @include https://soundcloud.com/*
-// @version 0.0.3
+// @version 0.0.4
 // @grant GM_addStyle
 // @grant GM_deleteValue
 // @grant GM_getValue
@@ -60,19 +60,22 @@ var Utils = {
      * @returns {Function}
      */
     throttle: function throttle(fn, delay) {
-        var _this = this,
-            _arguments = arguments;
+        var _this = this;
 
-        var timer = null;
+        var args = [].slice.call(arguments);
+
+        var wait = false;
 
         return function () {
-            var context = _this;
-            var args = [].slice.call(_arguments);
+            if (wait === true) {
+                return;
+            }
 
-            clearTimeout(timer);
+            fn.apply(_this, args);
+            wait = true;
 
-            timer = setTimeout(function () {
-                fn.apply(context, args);
+            setTimeout(function () {
+                return wait = false;
             }, delay);
         };
     },
